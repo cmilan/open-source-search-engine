@@ -79,6 +79,8 @@ void Rdb::reset ( ) {
 	// reset tree and cache
 	m_tree.reset();
 	m_buckets.reset();
+	if(m_rdbId==RDB_POSDB)
+		g_prev_rdb_buckets.reset();
 	m_mem.reset();
 	//m_cache.reset();
 	m_lastWrite = 0LL;
@@ -208,6 +210,12 @@ bool Rdb::init(const char *dbname,
 		if (!m_buckets.set(fixedDataSize, maxTreeMem, m_treeAllocName, m_rdbId, m_dbname, m_ks)) {
 			log( LOG_ERROR, "db: Failed to set buckets." );
 			return false;
+		}
+		if(m_rdbId==RDB_POSDB) {
+			if (!g_prev_rdb_buckets.set(fixedDataSize, maxTreeMem, m_treeAllocName, m_rdbId, m_dbname, m_ks)) {
+				log( LOG_ERROR, "db: Failed to set buckets." );
+				return false;
+			}
 		}
 	}
 
@@ -921,6 +929,10 @@ bool Rdb::loadTree ( ) {
 			log( LOG_ERROR, "db: Could not load saved buckets." );
 			return false;
 		}
+		if ( !g_prev_rdb_buckets.loadBuckets( m_dbname ) ) {
+			log( LOG_ERROR, "db: Could not load saved buckets." );
+			return false;
+		}
 
 		int32_t numKeys = m_buckets.getNumKeys();
 		
@@ -1615,6 +1627,28 @@ bool Rdb::addList(collnum_t collnum, RdbList *list, bool checkForRoom) {
 	return true;
 }
 
+void Rdb::addList2(collnum_t collnum, RdbList *list) {
+	list->resetListPtr();
+	if(list->isExhausted())
+		return;
+	do {
+		char key[MAX_KEY_BYTES];
+		list->getCurrentKey(key);
+		int32_t  dataSize;
+		char *data;
+
+		// negative keys have no data
+		if ( ! KEYNEG(key) ) {
+			dataSize = list->getCurrentDataSize();
+			data     = list->getCurrentData();
+		} else {
+			dataSize = 0;
+			data     = NULL;
+		}
+
+		addRecord2(collnum, key, data, dataSize);
+	} while(list->skipCurrentRecord());
+}
 
 void Rdb::verifyTreeIntegrity() {
 	if(m_useTree)
@@ -2118,6 +2152,10 @@ bool Rdb::addRecord(collnum_t collnum, char *key, char *data, int32_t dataSize) 
 	}
 
 	logTrace(g_conf.m_logTraceRdb, "END. %s: Done. Returning true", m_dbname);
+	return true;
+}
+bool Rdb::addRecord2(collnum_t collnum, char *key, char *data, int32_t dataSize) {
+	g_prev_rdb_buckets.addNode(collnum, key, data, dataSize);
 	return true;
 }
 

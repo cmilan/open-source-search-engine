@@ -15,6 +15,7 @@
 #define INIT_SIZE 4096
 #define SAVE_VERSION 0
 
+RdbBuckets g_prev_rdb_buckets; //for temporary debugging
 
 RdbBucket::RdbBucket() {
 	m_endKey = NULL;
@@ -586,6 +587,7 @@ RdbBuckets::RdbBuckets()
 
 bool RdbBuckets::set(int32_t fixedDataSize, int32_t maxMem, const char *allocName, rdbid_t rdbId,
                      const char *dbname, char keySize) {
+log(LOG_INFO,"@@@@@@@@@@ RdbBuckets:.set(this=%p)",this);
 	m_numBuckets = 0;
 	m_ks = keySize;
 	m_rdbId = rdbId;
@@ -705,6 +707,7 @@ RdbBucket* RdbBuckets::bucketFactory() {
 }
 
 bool RdbBuckets::resizeTable( int32_t numNeeded ) {
+log(LOG_INFO,"@@@@ RdbBuckets::resizeTable(this=%p)",this);
 	logTrace(g_conf.m_logTraceRdbBuckets, "BEGIN. numNeeded=%" PRId32, numNeeded);
 
 	if (numNeeded == m_maxBuckets) {
@@ -788,6 +791,7 @@ bool RdbBuckets::resizeTable( int32_t numNeeded ) {
 
 	m_masterPtr = tmpMasterPtr;
 	m_masterSize = newMasterSize;
+log(LOG_INFO,"@@@@ RdbBuckets::resizeTable(this=%p): m_masterPtr=%p m_masterSize=%d",this,m_masterPtr,m_masterSize);
 	m_buckets = tmpBucketPtrs;
 	m_bucketsSpace = tmpBucketSpace;
 	m_maxBuckets = tmpMaxBuckets;
@@ -1232,6 +1236,10 @@ bool RdbBuckets::selfTest(bool thorough, bool core) {
 				if (!core) {
 					return false;
 				}
+g_prev_rdb_buckets.m_dbname="posdb-buckets-pre-saved.dat";
+g_prev_rdb_buckets.fastSave(".",false,NULL,0);
+m_dbname="posdb-buckets-post-saved.dat";
+fastSave(".",false,NULL,0);
 				gbshutdownCorrupted();
 			}
 		}

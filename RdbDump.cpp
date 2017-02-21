@@ -888,6 +888,7 @@ tryAgain:
 		s = m_tree->deleteList(m_collnum, m_list);
 	} else {
 		s = m_buckets->deleteList(m_collnum, m_list);
+g_prev_rdb_buckets.deleteList(m_collnum, m_list);
 	}
 
 	// problem?

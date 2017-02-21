@@ -247,4 +247,6 @@ private:
 	const char *m_allocName;
 };
 
+extern RdbBuckets g_prev_rdb_buckets; //for temporary debugging
+
 #endif // GB_RDBBUCKETS_H

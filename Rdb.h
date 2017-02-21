@@ -112,6 +112,7 @@ public:
 	 * the scenario where we want to eliminate a negative key is when we deleted a document, and then we respider successfully
 	 */
 	bool addRecord(collnum_t collnum, char *key, char *data, int32_t dataSize);
+	bool addRecord2(collnum_t collnum, char *key, char *data, int32_t dataSize);
 
 	// returns false if no room in tree or m_mem for a list to add
 	bool hasRoom(RdbList *list);
@@ -301,6 +302,7 @@ public:
 
 	static void doneDumpingCollWrapper(void *state);
 
+	void addList2(collnum_t collnum, RdbList *list);
 private:
 	bool addList(collnum_t collnum, RdbList *list, bool checkForRoom);
 	// get the directory name where this rdb stores its files

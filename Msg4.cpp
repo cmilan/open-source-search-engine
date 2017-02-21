@@ -1014,6 +1014,26 @@ static bool addMetaList(const char *p, UdpSlot *slot) {
 		}
 	}
 
+//redo for g_prev_rdb_buckets
+	p = pstart;
+	while(p < pend) {
+		collnum_t collnum = *(collnum_t *)p;
+		p += sizeof(collnum_t);
+		rdbid_t rdbId = static_cast<rdbid_t>(*(char *)p);
+		p += 1;
+		int32_t recSize = *(int32_t *)p;
+		p += 4;
+		if (rdbId != lastRdbId || !rdb)
+			rdb = getRdbFromId(rdbId);
+		if(rdbId==RDB_POSDB) {
+			g_errno = 0;
+			RdbList list;
+			list.set((char *)p, recSize, (char *)p, recSize, rdb->getFixedDataSize(), false, rdb->useHalfKeys(), rdb->getKeySize());
+			rdb->addList2(collnum, &list);
+		}
+		p += recSize;
+	}
+
 	// no memory means to try again
 	if ( g_errno == ENOMEM ) g_errno = ETRYAGAIN;
 	// doing a full rebuid will add collections
