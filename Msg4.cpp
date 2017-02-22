@@ -71,7 +71,6 @@ static Msg4 *s_msg4Tail = NULL;
 // . also, need to update spiderdb rec for the url in Msg14 using Msg4 too!
 // . need to add support for passing in array of lists for Msg14
 
-static bool addMetaList(const char *p, class UdpSlot *slot = NULL);
 static void gotReplyWrapper4(void *state, void *state2);
 static void handleRequest4(UdpSlot *slot, int32_t niceness);
 static void sleepCallback4(int bogusfd, void *state);
@@ -827,7 +826,7 @@ static void handleRequest4(UdpSlot *slot, int32_t netnice) {
 // . Syncdb.cpp will call this after it has received checkoff keys from
 //   all the alive hosts for this zid/sid
 // . returns false and sets g_errno on error, returns true otherwise
-static bool addMetaList(const char *p, UdpSlot *slot) {
+bool addMetaList(const char *p, UdpSlot *slot) {
 	logDebug(g_conf.m_logDebugSpider, "syncdb: calling addMetalist zid=%" PRIu64, *(int64_t *) (p + 4));
 
 	// get total buf used

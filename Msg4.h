@@ -9,6 +9,7 @@ bool saveAddsInProgress ( const char *filenamePrefix );
 bool loadAddsInProgress ( const char *filenamePrefix );
 // used by Repair.cpp to make sure we are not adding any more data ("writing")
 bool hasAddsInQueue     ( ) ;
+bool addMetaList(const char *p, class UdpSlot *slot = NULL);
 
 #include "SafeBuf.h"
 #include "rdbid_t.h"

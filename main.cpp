@@ -88,6 +88,9 @@
 #include <valgrind/helgrind.h>
 #endif
 
+#include <iostream>
+#include <fstream>
+
 static bool registerMsgHandlers();
 static bool registerMsgHandlers1();
 static bool registerMsgHandlers2();
@@ -2068,6 +2071,23 @@ int main2 ( int argc , char *argv[] ) {
 
 	log("db: gb is now ready");
 
+	// hack
+	{
+		std::ifstream file("msg4.dat", std::ios::in|std::ios::binary|std::ios::ate);
+		if (file.is_open()) {
+			logf(LOG_TRACE, "@@@ file is open");
+			std::ifstream::pos_type size = file.tellg();
+			char *p = (char*)malloc(size);
+
+			file.seekg(0, std::ios::beg);
+			file.read(p, size);
+			logf(LOG_TRACE, "@@@ before addMetaList");
+			addMetaList(p);
+			logf(LOG_TRACE, "@@@ after addMetaList");
+
+			free(p);
+		}
+	}
 	// . now start g_loops main interrupt handling loop
 	// . it should block forever
 	// . when it gets a signal it dispatches to a server or db to handle it
